@@ -123,9 +123,8 @@
     return null;
   }
 
-  /* ---------- colour picker (any element: section / button / text) ------- */
+  /* element identity helpers */
   var lastTargetEl = null;
-  var colorPanel = null;
 
   /* stable selector for elements that have no data-cms-id of their own */
   function pathFor(el) {
@@ -151,132 +150,7 @@
     return el.getAttribute("data-cms-id") || "path:" + pathFor(el);
   }
 
-  function markTarget(el) {
-    var prev = document.querySelector(".cms-color-pick");
-    if (prev) prev.classList.remove("cms-color-pick");
-    if (el) el.classList.add("cms-color-pick");
-  }
 
-  function colorTarget() {
-    var sel = window.getSelection();
-    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-      var node = sel.getRangeAt(0).commonAncestorContainer;
-      if (node && node.nodeType === 3) node = node.parentElement;
-      var box = node && node.closest("[data-cms-id]");
-      if (box) return box;
-    }
-    return lastTargetEl || editing;
-  }
-
-  var COLORS = [
-    "#000000", "#ffffff", "#dc2646", "#ef4444", "#f97316", "#f59e0b",
-    "#eab308", "#84cc16", "#22c55e", "#16a34a", "#10b981", "#14b8a6",
-    "#06b6d4", "#0ea5e9", "#3b82f6", "#2563eb", "#6366f1", "#8b5cf6",
-    "#a855f7", "#d946ef", "#ec4899", "#f43f5e", "#78716c", "#374151",
-  ];
-
-  function applyColor(mode, value) {
-    var el = colorTarget();
-    if (!el) {
-      toast("\u09aa\u09cd\u09b0\u09a5\u09ae\u09c7 \u098f\u0995\u099f\u09bf \u0985\u0982\u09b6 \u09b8\u09bf\u09b2\u09c7\u0995\u09cd\u099f \u0995\u09b0\u09c1\u09a8");
-      return;
-    }
-    if (mode === "color") {
-      if (el.style.color === value) return;
-      el.style.setProperty("color", value, "important");
-    } else {
-      if (el.style.backgroundColor === value) return;
-      el.style.setProperty("background-color", value, "important");
-    }
-    el.setAttribute("data-cms-fixed-color", "1");
-    record(el, mode === "color" ? "color" : "bgcolor", value);
-    refreshColorPanel();
-  }
-
-
-  function refreshColorPanel() {
-    if (!colorPanel) return;
-    var el = colorTarget();
-    var label = colorPanel.querySelector("#cms-c-target");
-    if (label)
-      label.textContent = el
-        ? "\u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09bf\u09a4: <" + el.tagName.toLowerCase() + ">"
-        : "\u0995\u09cb\u09a8\u09cb \u0985\u0982\u09b6 \u09b8\u09bf\u09b2\u09c7\u0995\u09cd\u099f \u0995\u09b0\u09be \u09b9\u09df\u09a8\u09bf";
-  }
-
-  function swatchRow(mode) {
-    var wrap = document.createElement("div");
-    wrap.className = "cms-swatches";
-    COLORS.forEach(function (c) {
-      var b = document.createElement("div");
-      b.className = "cms-sw";
-      b.style.background = c;
-      b.title = c;
-      b.onclick = function () {
-        applyColor(mode, c);
-      };
-      wrap.appendChild(b);
-    });
-    return wrap;
-  }
-
-  function toggleColorPanel() {
-    if (colorPanel) {
-      colorPanel.remove();
-      colorPanel = null;
-      markTarget(null);
-      document.documentElement.classList.remove("cms-color-mode");
-      return;
-    }
-    if (panel) {
-      panel.remove();
-      panel = null;
-    }
-    if (editing) editing.blur();
-
-    colorPanel = document.createElement("div");
-    colorPanel.className = "cms-panel";
-    colorPanel.innerHTML =
-      '<h4>\u09b0\u0982 (Colour)</h4>' +
-      '<div id="cms-c-target" style="font-size:12px;color:#6b7280;margin-bottom:10px"></div>' +
-      '<h4>\u099f\u09c7\u0995\u09cd\u09b8\u099f \u09b0\u0982</h4><div id="cms-c-text"></div>' +
-      '<div style="margin:8px 0 14px"><input type="color" id="cms-c-text-custom" style="width:100%;height:32px;border:1px solid #ddd;border-radius:8px;background:#fff"></div>' +
-      '<h4>\u09ac\u09cd\u09af\u09be\u0995\u0997\u09cd\u09b0\u09be\u0989\u09a8\u09cd\u09a1 \u09b0\u0982</h4><div id="cms-c-bg"></div>' +
-      '<div style="margin:8px 0 10px"><input type="color" id="cms-c-bg-custom" style="width:100%;height:32px;border:1px solid #ddd;border-radius:8px;background:#fff"></div>' +
-      '<button class="cms-btn" id="cms-c-clear" style="width:100%;background:#f3f4f6;color:#111">\u09b0\u0982 \u09ae\u09c1\u099b\u09c1\u09a8</button>';
-    document.body.appendChild(colorPanel);
-    document.documentElement.classList.add("cms-color-mode");
-    colorPanel.querySelector("#cms-c-text").appendChild(swatchRow("color"));
-    colorPanel.querySelector("#cms-c-bg").appendChild(swatchRow("bg"));
-    /* throttle the native colour picker: it fires oninput continuously while
-       dragging, which used to freeze the page */
-    function throttled(mode) {
-      var pending = null;
-      var timer = null;
-      return function () {
-        pending = this.value;
-        if (timer) return;
-        timer = setTimeout(function () {
-          timer = null;
-          applyColor(mode, pending);
-        }, 120);
-      };
-    }
-    colorPanel.querySelector("#cms-c-text-custom").oninput = throttled("color");
-    colorPanel.querySelector("#cms-c-bg-custom").oninput = throttled("bg");
-    colorPanel.querySelector("#cms-c-clear").onclick = function () {
-      var el = colorTarget();
-      if (!el) return;
-      el.style.removeProperty("color");
-      el.style.removeProperty("background-color");
-      el.removeAttribute("data-cms-fixed-color");
-      record(el, "color", "");
-      record(el, "bgcolor", "");
-    };
-
-    refreshColorPanel();
-    toast("\u09af\u09c7 \u0985\u0982\u09b6\u09c7 \u09b0\u0982 \u09a6\u09bf\u09a4\u09c7 \u099a\u09be\u09a8 \u09b8\u09c7\u099f\u09bf\u09a4\u09c7 \u0995\u09cd\u09b2\u09bf\u0995 \u0995\u09b0\u09c1\u09a8");
-  }
 
 
 
