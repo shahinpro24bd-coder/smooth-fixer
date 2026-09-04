@@ -16,28 +16,45 @@
     new WOW().init();
 
 
-    // Sticky Navbar
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 300) {
-            $('.sticky-top').addClass('shadow-sm').css('top', '0px');
-        } else {
-            $('.sticky-top').removeClass('shadow-sm').css('top', '-150px');
+    /* Sticky navbar + back-to-top: one passive, rAF-throttled scroll handler.
+       State is only written when it actually changes, so scrolling never
+       queues repeated jQuery animations (the old code did that on every
+       single scroll event and made the page feel stuck). */
+    var $sticky = $('.sticky-top');
+    var $toTop = $('.back-to-top');
+    var stickyOn = null;
+    var topOn = null;
+    var scrollTicking = false;
+
+    function onScrollFrame() {
+        scrollTicking = false;
+        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+
+        var wantSticky = y > 300;
+        if (wantSticky !== stickyOn) {
+            stickyOn = wantSticky;
+            $sticky.toggleClass('shadow-sm', wantSticky).css('top', wantSticky ? '0px' : '-150px');
         }
-    });
-    
-    
-    // Back to top button
-    $(window).scroll(function () {
-        if ($(this).scrollTop() > 100) {
-            $('.back-to-top').fadeIn('slow');
-        } else {
-            $('.back-to-top').fadeOut('slow');
+
+        var wantTop = y > 100;
+        if (wantTop !== topOn) {
+            topOn = wantTop;
+            $toTop.stop(true, true)[wantTop ? 'fadeIn' : 'fadeOut'](300);
         }
-    });
-    $('.back-to-top').click(function () {
-        $('html, body').animate({scrollTop: 0}, 1500, 'easeInOutExpo');
+    }
+
+    window.addEventListener('scroll', function () {
+        if (scrollTicking) return;
+        scrollTicking = true;
+        requestAnimationFrame(onScrollFrame);
+    }, { passive: true });
+    onScrollFrame();
+
+    $toTop.click(function () {
+        $('html, body').stop(true).animate({ scrollTop: 0 }, 700, 'easeInOutExpo');
         return false;
     });
+
 
 
     // Header carousel
