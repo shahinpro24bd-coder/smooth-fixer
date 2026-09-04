@@ -606,13 +606,13 @@
         }
         .hero3 {
             opacity: 0;
-            animation: hero2 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+            animation: hero2 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
         }
-        .hero4 { animation-delay: 0.1s; }
-        .hero5 { animation-delay: 0.2s; }
-        .hero6 { animation-delay: 0.35s; }
-        .hero7 { animation-delay: 0.5s; }
-        .hero8 { animation-delay: 0.65s; }
+        .hero4 { animation-delay: 0.05s; }
+        .hero5 { animation-delay: 0.1s; }
+        .hero6 { animation-delay: 0.18s; }
+        .hero7 { animation-delay: 0.26s; }
+        .hero8 { animation-delay: 0.34s; }
 
         .hero9 {
             flex: 1;

@@ -11,7 +11,7 @@
   var page = window.CMS_PAGE || "index";
   var CACHE_KEY = "cms-cache:" + page;
   var SETTINGS_KEY = "cms-settings";
-  var TIMEOUT_MS = 4000;
+  var TIMEOUT_MS = 1500;
 
   function get(key) {
     try {
@@ -70,6 +70,6 @@
   window.__CMS_GATE = { release: release };
   setTimeout(release, TIMEOUT_MS);
   window.addEventListener("load", function () {
-    setTimeout(release, 1200);
+    setTimeout(release, 300);
   });
 })();
