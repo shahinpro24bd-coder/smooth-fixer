@@ -296,37 +296,59 @@
     }
   }
 
+  /* Mutation handling is batched into one animation frame. Interactive
+     effects (tilt, sliders, carousels) write inline styles many times per
+     second; processing each write synchronously used to stall scrolling. */
+  var pendingMuts = [];
+  var flushScheduled = false;
+
+  function flushMuts() {
+    flushScheduled = false;
+    var muts = pendingMuts;
+    pendingMuts = [];
+    if (!currentColor || !muts.length) return;
+    var themeHsl = rgbToHsl.apply(null, hexToRgb(currentColor));
+    var SKIP = ".cms-panel,.cms-bar,.cms-sw,.cms-fs,#cms-login-btn,[data-cms-fixed-color]";
+    withoutObserving(function () {
+      for (var q = 0; q < muts.length; q++) {
+        var m = muts[q];
+        if (m.type === "childList") {
+          for (var i = 0; i < m.addedNodes.length; i++) {
+            if (m.addedNodes[i].nodeType === 1) {
+              recolorInline(m.addedNodes[i], themeHsl);
+              recolorAttrs(m.addedNodes[i], themeHsl);
+            }
+          }
+        } else if (m.type === "attributes" && m.target.nodeType === 1) {
+          var el = m.target;
+          var cur = el.getAttribute("style") || "";
+          /* cheap bail-out before any regex / DOM walking */
+          if (!cur || (cur.indexOf("#") < 0 && cur.indexOf("rgb") < 0)) continue;
+          if (el.closest && el.closest(SKIP)) continue;
+          var known = el.getAttribute("data-cms-style-orig");
+          if (known != null && cur === recolor(known, themeHsl)) continue;
+          if (touched(cur)) {
+            el.setAttribute("data-cms-style-orig", cur);
+            var next = recolor(cur, themeHsl);
+            if (next !== cur) el.setAttribute("style", next);
+          }
+        }
+      }
+    });
+  }
+
   function watchInline() {
     if (observer || typeof MutationObserver === "undefined") return;
     observer = new MutationObserver(function (muts) {
       if (!currentColor) return;
-      var themeHsl = rgbToHsl.apply(null, hexToRgb(currentColor));
-      withoutObserving(function () {
-        muts.forEach(function (m) {
-          if (m.type === "childList") {
-            for (var i = 0; i < m.addedNodes.length; i++) {
-              if (m.addedNodes[i].nodeType === 1) {
-                recolorInline(m.addedNodes[i], themeHsl);
-                recolorAttrs(m.addedNodes[i], themeHsl);
-              }
-            }
-          } else if (m.type === "attributes" && m.target.nodeType === 1) {
-            var el = m.target;
-            if (el.closest && el.closest(".cms-panel,.cms-bar,.cms-sw,.cms-fs,#cms-login-btn,[data-cms-fixed-color]")) return;
-            var cur = el.getAttribute("style") || "";
-            var known = el.getAttribute("data-cms-style-orig");
-            if (known != null && cur === recolor(known, themeHsl)) return;
-            if (touched(cur)) {
-              el.setAttribute("data-cms-style-orig", cur);
-              var next = recolor(cur, themeHsl);
-              if (next !== cur) el.setAttribute("style", next);
-            }
-          }
-        });
-      });
+      for (var i = 0; i < muts.length; i++) pendingMuts.push(muts[i]);
+      if (flushScheduled) return;
+      flushScheduled = true;
+      requestAnimationFrame(flushMuts);
     });
     observeInline();
   }
+
 
   function applyTheme(color) {
     if (!color || !/^#[0-9a-f]{3,6}$/i.test(color)) return;
