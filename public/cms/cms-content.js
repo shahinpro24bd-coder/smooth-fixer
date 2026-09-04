@@ -55,19 +55,15 @@
         else if (item.kind === "placeholder") el.setAttribute("placeholder", item.value);
         else if (item.kind === "bg") el.style.backgroundImage = "url('" + item.value + "')";
         else if (item.kind === "fontsize") el.style.fontSize = item.value;
+        /* per-element colour overrides were removed from the editor:
+           old saved values are ignored so the theme colour always wins */
         else if (item.kind === "color" || item.kind === "bgcolor") {
-          var prop = item.kind === "color" ? "color" : "background-color";
-          if (item.value) {
-            el.style.setProperty(prop, item.value, "important");
-            el.setAttribute("data-cms-fixed-color", "1");
-          } else {
-            el.style.removeProperty(prop);
-            el.removeAttribute("data-cms-fixed-color");
-          }
+          /* no-op */
         }
 
 
-        else if (!el.hasAttribute("data-cms-editing")) el.innerHTML = item.value;
+        else if (!el.hasAttribute("data-cms-editing") && el.innerHTML !== item.value)
+          el.innerHTML = item.value;
       } catch (e) {
         /* ignore a single bad item */
       }
