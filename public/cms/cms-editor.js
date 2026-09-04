@@ -19,8 +19,6 @@
     "[data-cms-editing] *{-webkit-text-fill-color:inherit !important;caret-color:#dc2646 !important;user-select:text !important;-webkit-user-select:text !important;animation:none !important}",
     "@keyframes cms-caret{0%,45%{opacity:1}50%,100%{opacity:0}}",
     ".cms-caret{position:fixed;width:2px;background:#dc2646;z-index:2147483400;pointer-events:none;animation:cms-caret 1s steps(1) infinite;box-shadow:0 0 0 1px rgba(255,255,255,.6)}",
-    "html.cms-color-mode *{cursor:crosshair !important}",
-    ".cms-color-pick{outline:3px solid #2563eb !important;outline-offset:1px}",
 
 
     ".cms-modal{position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-family:system-ui,'Hind Siliguri',sans-serif}",
@@ -336,7 +334,7 @@
     var id = idFor(el);
     /* style edits live under their own row id so they never overwrite the
        text of the same element (one DB row per page + cms_id) */
-    var suffix = { fontsize: "::fs", color: "::color", bgcolor: "::bgcolor" }[kind] || "";
+    var suffix = kind === "fontsize" ? "::fs" : "";
     changes[id + "::" + kind] = { cms_id: id + suffix, kind: kind, value: value };
     updateBar();
   }
@@ -347,10 +345,6 @@
     var clone = el.cloneNode(true);
     Array.prototype.forEach.call(clone.querySelectorAll(".cms-pencil,.cms-caret"), function (n) {
       n.remove();
-    });
-    Array.prototype.forEach.call(clone.querySelectorAll(".cms-color-pick"), function (n) {
-      n.classList.remove("cms-color-pick");
-      if (!n.getAttribute("class")) n.removeAttribute("class");
     });
     clone.removeAttribute("contenteditable");
     clone.removeAttribute("data-cms-editing");
@@ -491,7 +485,6 @@
       panel = null;
       return;
     }
-    if (colorPanel) toggleColorPanel();
 
     panel = document.createElement("div");
     panel.className = "cms-panel";
@@ -573,14 +566,12 @@
       '<span id="cms-count">0 \u09aa\u09b0\u09bf\u09ac\u09b0\u09cd\u09a4\u09a8</span>' +
       '<button class="cms-btn" id="cms-fs-minus" title="\u099b\u09cb\u099f\u09cb \u0995\u09b0\u09c1\u09a8">A\u2212</button>' +
       '<button class="cms-btn" id="cms-fs-plus" title="\u09ac\u09dc\u09cb \u0995\u09b0\u09c1\u09a8">A+</button>' +
-      '<button class="cms-btn" id="cms-color" style="background:linear-gradient(90deg,#ef4444,#3b82f6);color:#fff">\u09b0\u0982</button>' +
       '<button class="cms-btn cms-btn-set" id="cms-settings">\u2699 \u09b8\u09c7\u099f\u09bf\u0982\u09b8</button>' +
       '<button class="cms-btn cms-btn-save" id="cms-save">\u09b8\u09c7\u09ad \u0995\u09b0\u09c1\u09a8</button>' +
       '<button class="cms-btn cms-btn-out" id="cms-logout">\u09b2\u0997 \u0986\u0989\u099f</button>';
     document.body.appendChild(bar);
     bar.querySelector("#cms-save").onclick = save;
     bar.querySelector("#cms-settings").onclick = toggleSettings;
-    bar.querySelector("#cms-color").onclick = toggleColorPanel;
     bar.querySelector("#cms-logout").onclick = logout;
     bar.querySelector("#cms-fs-minus").onclick = function (e) {
       e.preventDefault();
