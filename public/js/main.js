@@ -221,26 +221,57 @@ if (btnLibrary) {
             });
         });
 
-        // enhanced image interaction: 3D tilt effect on desktop (premium)
+        /* 3D tilt on desktop — rAF throttled, geometry cached, and skipped
+           while the hero is off screen so it costs nothing during scroll. */
         const imgWrap = document.getElementById('heroImgWrap');
-        if (imgWrap && window.innerWidth > 880) {
-            document.addEventListener('mousemove', (e) => {
-                const rect = imgWrap.getBoundingClientRect();
+        if (imgWrap && window.matchMedia('(min-width: 881px) and (hover: hover)').matches) {
+            let rect = null;
+            let pending = null;
+            let ticking = false;
+            let visible = true;
+
+            const measure = () => { rect = imgWrap.getBoundingClientRect(); };
+            measure();
+            window.addEventListener('resize', measure, { passive: true });
+            window.addEventListener('scroll', () => { rect = null; }, { passive: true });
+
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver((entries) => {
+                    visible = entries[0].isIntersecting;
+                    if (!visible) imgWrap.style.transform = '';
+                }, { rootMargin: '100px' }).observe(imgWrap);
+            }
+
+            const render = () => {
+                ticking = false;
+                if (!pending || !visible) return;
+                if (!rect) measure();
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
-                const deltaX = (e.clientX - centerX) / 25;
-                const deltaY = (e.clientY - centerY) / 25;
                 const maxRotate = 8;
-                const rotX = Math.min(maxRotate, Math.max(-maxRotate, deltaY));
-                const rotY = Math.min(maxRotate, Math.max(-maxRotate, -deltaX));
-                imgWrap.style.transform = `perspective(1000px) rotateX(${rotX * 0.6}deg) rotateY(${rotY * 0.6}deg) translateY(-4px)`;
-                imgWrap.style.transition = 'transform 0.1s ease-out';
-            });
+                const rotX = Math.min(maxRotate, Math.max(-maxRotate, (pending.y - centerY) / 25));
+                const rotY = Math.min(maxRotate, Math.max(-maxRotate, -(pending.x - centerX) / 25));
+                imgWrap.style.transform =
+                    `perspective(1000px) rotateX(${rotX * 0.6}deg) rotateY(${rotY * 0.6}deg) translateY(-4px)`;
+            };
+
+            imgWrap.style.transition = 'transform 0.2s ease-out';
+            imgWrap.style.willChange = 'transform';
+
+            document.addEventListener('mousemove', (e) => {
+                if (!visible) return;
+                pending = { x: e.clientX, y: e.clientY };
+                if (ticking) return;
+                ticking = true;
+                requestAnimationFrame(render);
+            }, { passive: true });
+
             document.addEventListener('mouseleave', () => {
+                pending = null;
                 imgWrap.style.transform = '';
-                imgWrap.style.transition = 'transform 0.4s ease';
             });
         }
+
         
         // subtle particle effect on image click
         const imgInner = document.querySelector('.hero32');
