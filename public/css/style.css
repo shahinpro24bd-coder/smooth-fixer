@@ -570,3 +570,25 @@
         .hero15, .hero19, .appt-row .flex-grow-1 div, .video-L4, .video-L13 h3, .video-L13 p {
             font-family: 'Noto Serif Bengali', serif !important;
         }
+/* ---------- smooth-scrolling / rendering performance ----------
+   Bootstrap sets scroll-behavior:smooth on :root, which animates every
+   programmatic scroll and makes wheel/touch scrolling feel stuck on this
+   long page. Anchor scrolling is handled in JS instead. */
+:root { scroll-behavior: auto; }
+
+/* keep expensive paint work off the scroll thread */
+.hero35,
+.ser7,
+.qual-card,
+.testimonial-card,
+.owl-carousel {
+  backface-visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
