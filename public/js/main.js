@@ -50,6 +50,19 @@
     }, { passive: true });
     onScrollFrame();
 
+    /* smooth in-page anchor scrolling (CSS scroll-behavior is off for perf) */
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+        if (!a) return;
+        var href = a.getAttribute('href');
+        if (!href || href === '#' || a.classList.contains('back-to-top')) return;
+        var target = document.getElementById(href.slice(1));
+        if (!target) return;
+        e.preventDefault();
+        var top = target.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+    });
+
     $toTop.click(function () {
         $('html, body').stop(true).animate({ scrollTop: 0 }, 700, 'easeInOutExpo');
         return false;
