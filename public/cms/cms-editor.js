@@ -162,18 +162,8 @@
         if (e.target.closest(".cms-bar,.cms-modal,.cms-btn-login,.cms-toast,.cms-panel"))
           return;
 
-        /* colour mode: any element can be picked, even boxes with no
-           data-cms-id (cards, sections, footers, buttons ...) */
-        if (colorPanel) {
-          e.preventDefault();
-          e.stopPropagation();
-          var pick = e.target.closest("[data-cms-id]") || e.target;
-          if (pick === document.body || pick === document.documentElement) return;
-          lastTargetEl = pick;
-          markTarget(pick);
-          refreshColorPanel();
-          return;
-        }
+
+
 
         /* already typing inside this element: let the browser handle the
            click normally (caret placement, text selection, etc.) */
