@@ -16,14 +16,45 @@
     new WOW().init();
 
     /* Mobile nav toggle fallback: if the Bootstrap bundle failed to load
-       (or loads late), still open/close the menu manually. */
+       (or loads late), still open/close the menu manually — with a smooth
+       height animation like Bootstrap's own collapse. */
     document.addEventListener('click', function (e) {
         var btn = e.target.closest ? e.target.closest('.navbar-toggler') : null;
         if (!btn) return;
         if (window.bootstrap && window.bootstrap.Collapse) return; // Bootstrap handles it
         var targetSel = btn.getAttribute('data-bs-target') || btn.getAttribute('data-target');
         var target = targetSel && document.querySelector(targetSel);
-        if (target) target.classList.toggle('show');
+        if (!target || target.dataset.navAnimating) return;
+
+        target.style.transition = 'height 0.35s ease';
+        target.style.overflow = 'hidden';
+
+        if (target.classList.contains('show')) {
+            target.dataset.navAnimating = '1';
+            target.style.height = target.scrollHeight + 'px';
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () { target.style.height = '0px'; });
+            });
+            target.addEventListener('transitionend', function h() {
+                target.removeEventListener('transitionend', h);
+                target.classList.remove('show');
+                target.style.cssText = '';
+                delete target.dataset.navAnimating;
+            });
+        } else {
+            target.dataset.navAnimating = '1';
+            target.classList.add('show');
+            target.style.height = '0px';
+            var full = target.scrollHeight + 'px';
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () { target.style.height = full; });
+            });
+            target.addEventListener('transitionend', function h() {
+                target.removeEventListener('transitionend', h);
+                target.style.cssText = '';
+                delete target.dataset.navAnimating;
+            });
+        }
     });
 
 
