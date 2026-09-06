@@ -15,6 +15,17 @@
     // Initiate the wowjs
     new WOW().init();
 
+    /* Mobile nav toggle fallback: if the Bootstrap bundle failed to load
+       (or loads late), still open/close the menu manually. */
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('.navbar-toggler') : null;
+        if (!btn) return;
+        if (window.bootstrap && window.bootstrap.Collapse) return; // Bootstrap handles it
+        var targetSel = btn.getAttribute('data-bs-target') || btn.getAttribute('data-target');
+        var target = targetSel && document.querySelector(targetSel);
+        if (target) target.classList.toggle('show');
+    });
+
 
     /* Sticky navbar + back-to-top: one passive, rAF-throttled scroll handler.
        State is only written when it actually changes, so scrolling never
