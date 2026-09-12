@@ -14,13 +14,82 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cms_config: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          cms_id: string
+          id: string
+          kind: string
+          page: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          cms_id: string
+          id?: string
+          kind?: string
+          page: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          cms_id?: string
+          id?: string
+          kind?: string
+          page?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      site_images: {
+        Row: {
+          created_at: string
+          data: string
+          id: string
+          mime: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          id?: string
+          mime: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          id?: string
+          mime?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cms_save_content: {
+        Args: { p_items: Json; p_page: string; p_secret: string }
+        Returns: number
+      }
+      cms_save_image: {
+        Args: { p_data: string; p_mime: string; p_secret: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
