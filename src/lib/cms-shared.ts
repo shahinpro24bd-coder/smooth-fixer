@@ -1,8 +1,8 @@
 // Shared CMS helpers used by the /api/public/cms/* server routes.
 // No module-scope node:* imports: this file is reachable from the route tree.
 
-const FALLBACK_URL = "https://yyocyvzyhhgfrngrxzhh.supabase.co";
-const FALLBACK_KEY = "sb_publishable_CkkVe0a4-bFvkGn7e39F_g_3uJPv7Au";
+const FALLBACK_URL = "https://wawnjmwtfqyfezzzurdr.supabase.co";
+const FALLBACK_KEY = "sb_publishable_EkTiowgKBMLXr-Pqs-1iWQ_36JiSchJ";
 
 /** Strips markdown/quotes/whitespace that people accidentally paste into env vars. */
 function clean(raw: string | undefined | null): string {
