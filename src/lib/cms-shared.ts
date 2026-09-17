@@ -168,7 +168,15 @@ export type CmsItem = { cms_id: string; kind: string; value: string };
 /** Applies items to an HTML string with minimal string surgery. */
 export function patchHtml(html: string, items: CmsItem[]): string {
   let out = html;
-  for (const item of items) {
+  /* Apply outer elements before inner ones: a parent's opening tag always
+     appears earlier in the document, so sorting by marker position keeps a
+     saved parent from wiping an already-applied child edit. */
+  const ordered = [...items].sort((a, b) => {
+    const ia = html.indexOf(`data-cms-id="${a.cms_id.replace(/::(fs|color|bgcolor)$/, "")}"`);
+    const ib = html.indexOf(`data-cms-id="${b.cms_id.replace(/::(fs|color|bgcolor)$/, "")}"`);
+    return (ia < 0 ? Number.MAX_SAFE_INTEGER : ia) - (ib < 0 ? Number.MAX_SAFE_INTEGER : ib);
+  });
+  for (const item of ordered) {
     const found = findElement(out, item.cms_id.replace(/::(fs|color|bgcolor)$/, ""));
     if (!found) continue;
     const { tagStart, tagEnd, tagName } = found;
