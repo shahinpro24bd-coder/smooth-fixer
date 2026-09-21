@@ -181,6 +181,16 @@
            click normally (caret placement, text selection, etc.) */
         if (e.target.closest("[data-cms-editing]")) return;
 
+        /* video grid: open the YouTube manager instead of text editing */
+        var vbox = e.target.closest("[data-cms-videos]");
+        if (vbox) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (editing) editing.blur();
+          openVideos(vbox);
+          return;
+        }
+
         var el = e.target.closest("[data-cms-id]");
         if (!el) {
           /* clicking outside finishes the current edit */
