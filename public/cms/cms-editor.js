@@ -38,6 +38,20 @@
     ".cms-sw{width:100%;padding-top:100%;border-radius:6px;cursor:pointer;border:2px solid transparent}",
     ".cms-sw.sel{border-color:#111827;box-shadow:0 0 0 2px #fff inset}",
     ".cms-toast{position:fixed;left:50%;top:20px;transform:translateX(-50%);z-index:2147483600;background:#111827;color:#fff;padding:10px 18px;border-radius:10px;font-family:system-ui,sans-serif;font-size:14px}",
+    /* video manager */
+    ".cms-on [data-cms-videos]{outline:2px dashed #2563eb !important;outline-offset:6px}",
+    ".cms-on [data-cms-videos] iframe{pointer-events:none}",
+    ".cms-vpanel{position:fixed;inset:0;z-index:2147483600;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-family:system-ui,'Hind Siliguri',sans-serif}",
+    ".cms-vcard{background:#fff;border-radius:14px;padding:20px;width:420px;max-width:92vw;max-height:84vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);color:#111}",
+    ".cms-vcard h3{margin:0 0 12px;font-size:17px}",
+    ".cms-vrow{display:flex;gap:8px;margin-bottom:12px}",
+    ".cms-vrow input{flex:1;padding:10px;border:1px solid #d4d4d4;border-radius:8px;font-size:14px}",
+    ".cms-vlist{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}",
+    ".cms-vitem{display:flex;align-items:center;gap:10px;border:1px solid #eee;border-radius:10px;padding:6px}",
+    ".cms-vitem img{width:80px;height:45px;object-fit:cover;border-radius:6px;background:#000}",
+    ".cms-vitem span{flex:1;font-size:12px;color:#555;word-break:break-all}",
+    ".cms-vdel{background:#dc2646;color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}",
+    ".cms-vempty{font-size:13px;color:#888;margin-bottom:12px}",
 
   ].join("\n");
   document.head.appendChild(css);
@@ -166,6 +180,16 @@
         /* already typing inside this element: let the browser handle the
            click normally (caret placement, text selection, etc.) */
         if (e.target.closest("[data-cms-editing]")) return;
+
+        /* video grid: open the YouTube manager instead of text editing */
+        var vbox = e.target.closest("[data-cms-videos]");
+        if (vbox) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (editing) editing.blur();
+          openVideos(vbox);
+          return;
+        }
 
         var el = e.target.closest("[data-cms-id]");
         if (!el) {
@@ -545,6 +569,114 @@
         updateBar();
       };
       sw.appendChild(b);
+    });
+  }
+
+  /* ---------- YouTube video manager (only on the 2.html edit copies) ----- */
+  function ytId(url) {
+    var s = String(url || "").trim();
+    var m = s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/);
+    if (m) return m[1];
+    if (/^[A-Za-z0-9_-]{11}$/.test(s)) return s;
+    return null;
+  }
+
+  function readVideos(box) {
+    var out = [];
+    Array.prototype.forEach.call(box.querySelectorAll("iframe"), function (f) {
+      var id = ytId(f.getAttribute("src") || "");
+      if (id && out.indexOf(id) < 0) out.push(id);
+    });
+    return out;
+  }
+
+  function videosHtml(ids) {
+    if (!ids.length)
+      return '<p class="cms-video-empty text-center w-100">\u098f\u0996\u09a8\u09cb \u0995\u09cb\u09a8\u09cb \u09ad\u09bf\u09a1\u09bf\u0993 \u09af\u09c1\u0995\u09cd\u09a4 \u0995\u09b0\u09be \u09b9\u09df\u09a8\u09bf\u0964</p>';
+    return ids
+      .map(function (id) {
+        return (
+          '<div class="video-card"><iframe src="https://www.youtube.com/embed/' +
+          id +
+          '?rel=0&modestbranding=1&iv_load_policy=3" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>'
+        );
+      })
+      .join("");
+  }
+
+  function openVideos(box) {
+    var ids = readVideos(box);
+
+    var wrap = document.createElement("div");
+    wrap.className = "cms-vpanel";
+    wrap.innerHTML =
+      '<div class="cms-vcard">' +
+      "<h3>\u09ad\u09bf\u09a1\u09bf\u0993 \u09ae\u09cd\u09af\u09be\u09a8\u09c7\u099c\u09be\u09b0 (YouTube)</h3>" +
+      '<div class="cms-vrow"><input id="cms-vurl" placeholder="YouTube \u09b2\u09bf\u0982\u0995 \u09aa\u09c7\u09b8\u09cd\u099f \u0995\u09b0\u09c1\u09a8">' +
+      '<button class="cms-btn cms-btn-save" id="cms-vadd">\u09af\u09c1\u0995\u09cd\u09a4 \u0995\u09b0\u09c1\u09a8</button></div>' +
+      '<div class="cms-vlist" id="cms-vlist"></div>' +
+      '<button class="cms-btn cms-btn-out" id="cms-vclose" style="width:100%">\u09ac\u09a8\u09cd\u09a7 \u0995\u09b0\u09c1\u09a8</button>' +
+      "</div>";
+    document.body.appendChild(wrap);
+
+    var list = wrap.querySelector("#cms-vlist");
+    var input = wrap.querySelector("#cms-vurl");
+
+    function commit() {
+      box.innerHTML = videosHtml(ids);
+      record(box, "text", videosHtml(ids));
+    }
+
+    function render() {
+      list.innerHTML = "";
+      if (!ids.length) {
+        var e = document.createElement("div");
+        e.className = "cms-vempty";
+        e.textContent = "\u0995\u09cb\u09a8\u09cb \u09ad\u09bf\u09a1\u09bf\u0993 \u09a8\u09c7\u0987\u0964";
+        list.appendChild(e);
+        return;
+      }
+      ids.forEach(function (id, i) {
+        var row = document.createElement("div");
+        row.className = "cms-vitem";
+        row.innerHTML =
+          '<img src="https://img.youtube.com/vi/' +
+          id +
+          '/mqdefault.jpg" alt=""><span>' +
+          id +
+          "</span>";
+        var del = document.createElement("button");
+        del.className = "cms-vdel";
+        del.textContent = "\u09ae\u09c1\u099b\u09c1\u09a8";
+        del.onclick = function () {
+          ids.splice(i, 1);
+          commit();
+          render();
+        };
+        row.appendChild(del);
+        list.appendChild(row);
+      });
+    }
+    render();
+
+    wrap.querySelector("#cms-vadd").onclick = function () {
+      var id = ytId(input.value);
+      if (!id) return toast("\u09b8\u09a0\u09bf\u0995 YouTube \u09b2\u09bf\u0982\u0995 \u09a6\u09bf\u09a8");
+      if (ids.indexOf(id) >= 0) return toast("\u098f\u0987 \u09ad\u09bf\u09a1\u09bf\u0993\u099f\u09bf \u0986\u0997\u09c7\u0987 \u0986\u099b\u09c7");
+      ids.push(id);
+      input.value = "";
+      commit();
+      render();
+      toast("\u09ad\u09bf\u09a1\u09bf\u0993 \u09af\u09c1\u0995\u09cd\u09a4 \u09b9\u09df\u09c7\u099b\u09c7 \u2014 \u09b8\u09c7\u09ad \u0995\u09b0\u09c1\u09a8");
+    };
+    input.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") wrap.querySelector("#cms-vadd").click();
+    });
+    wrap.querySelector("#cms-vclose").onclick = function () {
+      wrap.remove();
+    };
+    wrap.addEventListener("click", function (ev) {
+      if (ev.target === wrap) wrap.remove();
     });
   }
 
