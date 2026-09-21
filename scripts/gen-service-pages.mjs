@@ -9,7 +9,8 @@ const lines = src.split("\n");
 
 const headEnd = lines.findIndex((l) => l.trim() === "</head>"); // exclusive of </head>
 const bodyStart = lines.findIndex((l) => l.trim() === "<body>");
-const navEnd = lines.findIndex((l, i) => i > bodyStart && l.trim() === "<!-- nav -->" && i > bodyStart + 3);
+const navStart = lines.findIndex((l, i) => i > bodyStart && l.trim() === "<!-- nav -->");
+const navEnd = lines.findIndex((l, i) => i > navStart && l.trim() === "<!-- nav -->");
 const footerStart = lines.findIndex((l) => l.trim() === "<!-- Footer -->");
 
 const HEAD = lines.slice(0, headEnd).join("\n");
