@@ -115,101 +115,130 @@ function reId(html, slug) {
 }
 
 function build(svc) {
-  let n = 100;
+  let n = 200;
   const id = () => `${svc.slug}-${n++}`;
 
   const points = svc.points
     .map(
       (p) =>
-        `                        <li style="margin-bottom:10px; display:flex; gap:10px; align-items:flex-start;"><i class="fas fa-check-circle" style="color:var(--bs-primary); margin-top:4px;"></i><span data-cms-id="${id()}" data-cms-kind="text">${p}</span></li>`,
+        `                        <li><i class="fas fa-check" aria-hidden="true"></i><span data-cms-id="${id()}" data-cms-kind="text">${p}</span></li>`,
     )
     .join("\n");
 
   const head = HEAD.replace('window.CMS_PAGE="service"', `window.CMS_PAGE="${svc.slug}"`).replace(
     /<title>[\s\S]*?<\/title>/,
-    `<title>${svc.title} - ডা. এম. এ. বি. সিদ্দিক</title>`,
+    `<title>${svc.title} | অধ্যাপক ডাঃ এম এ বি সিদ্দিক</title>`,
+  ).replace(
+    /<meta\s+content="[^"]*"\s+name="description">/,
+    `<meta content="অধ্যাপক ডাঃ এম এ বি সিদ্দিকের তত্ত্বাবধানে ${svc.title}—রোগ নির্ণয়, আধুনিক অস্ত্রোপচার ও ফলো-আপ সেবা সম্পর্কে বিস্তারিত জানুন।" name="description">\n    <meta property="og:title" content="${svc.title} | অধ্যাপক ডাঃ এম এ বি সিদ্দিক">\n    <meta property="og:description" content="${svc.title}—বিশেষজ্ঞ পরামর্শ, আধুনিক চিকিৎসা ও সার্জারি সেবা।">\n    <meta property="og:type" content="website">\n    <meta name="twitter:card" content="summary">`,
   );
 
   const body = `
     <!-- page header -->
-    <div class="container-fluid page-header py-5 mb-5">
-        <div class="container text-center py-5">
+    <header class="container-fluid page-header service-detail-header">
+        <div class="container service-detail-header-inner text-center">
+            <p class="service-detail-kicker animated slideInLeft" data-cms-id="${id()}" data-cms-kind="text">বিশেষায়িত সার্জারি সেবা</p>
             <h1 class="display-4 animated slideInLeft" data-cms-id="${id()}" data-cms-kind="text">${svc.title}</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb justify-content-center animated slideInLeft mb-0">
-                    <li class="breadcrumb-item"><a class="text-primary" href="index.html" data-cms-id="${id()}" data-cms-kind="text">Home</a></li>
-                    <li class="breadcrumb-item"><a class="text-primary" href="service.html" data-cms-id="${id()}" data-cms-kind="text">Services</a></li>
+                    <li class="breadcrumb-item"><a href="index.html" data-cms-id="${id()}" data-cms-kind="text">হোম</a></li>
+                    <li class="breadcrumb-item"><a href="service.html" data-cms-id="${id()}" data-cms-kind="text">সেবাসমূহ</a></li>
                     <li class="breadcrumb-item active" aria-current="page" data-cms-id="${id()}" data-cms-kind="text">${svc.en}</li>
                 </ol>
             </nav>
         </div>
-    </div>
+    </header>
 
-    <!-- intro -->
-    <div class="container-fluid py-5">
+    <main>
+    <section class="service-detail-intro">
         <div class="container">
             <div class="row g-5 align-items-center">
                 <div class="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
-                    <img class="img-fluid rounded" style="width:100%; object-fit:cover; box-shadow:0 20px 50px rgba(0,0,0,.12);" src="img/about-dr.jpg" alt="${svc.title}" data-cms-id="${id()}" data-cms-kind="image">
+                    <div class="service-detail-portrait">
+                        <img src="img/about-dr.jpg" alt="${svc.title} বিশেষজ্ঞ অধ্যাপক ডাঃ এম এ বি সিদ্দিক" data-cms-id="${id()}" data-cms-kind="image">
+                        <div class="service-detail-doctor-strip">
+                            <strong data-cms-id="${id()}" data-cms-kind="text">অধ্যাপক ডাঃ এম এ বি সিদ্দিক</strong>
+                            <span data-cms-id="${id()}" data-cms-kind="text">কোলোরেক্টাল, ব্রেস্ট, এন্ডোল্যাপারোস্কপিক ও ক্যান্সার সার্জন</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-lg-6 wow fadeIn" data-wow-delay="0.2s">
-                    <div style="width:65px; height:65px; border-radius:50%; background:linear-gradient(135deg, #BF9456, #d4a95a); display:flex; align-items:center; justify-content:center; margin-bottom:1.2rem;">
-                        <i class="${svc.icon}" style="font-size:1.5rem; color:#fff;"></i>
+                    <div class="service-detail-icon">
+                        <i class="${svc.icon}" aria-hidden="true"></i>
                     </div>
-                    <h1 class="font-dancing-script text-primary" data-cms-id="${id()}" data-cms-kind="text">${svc.en}</h1>
-                    <h2 class="mb-4" data-cms-id="${id()}" data-cms-kind="text">${svc.title}</h2>
-                    <p class="mb-4" data-cms-id="${id()}" data-cms-kind="text">${svc.intro}</p>
-                    <ul style="list-style:none; padding:0; margin:0;">
+                    <p class="service-detail-eyebrow" data-cms-id="${id()}" data-cms-kind="text">${svc.en}</p>
+                    <h2 data-cms-id="${id()}" data-cms-kind="text">বিশেষজ্ঞের তত্ত্বাবধানে ${svc.title}</h2>
+                    <p class="service-detail-lead" data-cms-id="${id()}" data-cms-kind="text">${svc.intro}</p>
+                    <ul class="service-detail-list">
 ${points}
                     </ul>
-                    <a class="btn btn-primary rounded-pill px-4 py-2 mt-4" href="contact.html" data-cms-id="${id()}" data-cms-kind="text">অ্যাপয়েন্টমেন্ট বুক করুন</a>
+                    <div class="service-detail-actions">
+                        <a class="btn btn-primary rounded-pill px-4 py-3" href="contact.html" data-cms-id="${id()}" data-cms-kind="text">অ্যাপয়েন্টমেন্ট বুক করুন</a>
+                        <a class="service-detail-phone" href="tel:+88017101001161"><i class="fas fa-phone-alt" aria-hidden="true"></i><span data-cms-id="${id()}" data-cms-kind="text">০১৭১০-১০০১১৬১</span></a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- extra details -->
-    <div class="container-fluid py-5 bg-light">
+    <section class="service-detail-care">
         <div class="container">
-            <div class="text-center mb-5">
-                <h1 class="font-dancing-script text-primary" data-cms-id="${id()}" data-cms-kind="text">বিস্তারিত</h1>
-                <h2 class="mb-3" data-cms-id="${id()}" data-cms-kind="text">${svc.title} সম্পর্কে জেনে নিন</h2>
+            <div class="service-detail-heading text-center">
+                <p class="service-detail-eyebrow" data-cms-id="${id()}" data-cms-kind="text">রোগী-কেন্দ্রিক সেবা</p>
+                <h2 data-cms-id="${id()}" data-cms-kind="text">পরামর্শ থেকে সুস্থতা—প্রতিটি ধাপে যত্ন</h2>
+                <p data-cms-id="${id()}" data-cms-kind="text">সঠিক রোগ নির্ণয়, উপযুক্ত চিকিৎসা পরিকল্পনা এবং নিয়মিত ফলো-আপের মাধ্যমে নিরাপদ ও স্বস্তিদায়ক চিকিৎসা নিশ্চিত করা হয়।</p>
             </div>
-            <div class="row g-4">
+            <div class="row g-4 service-detail-steps">
                 <div class="col-md-4 wow fadeIn" data-wow-delay="0.1s">
-                    <div style="background:#fff; border-radius:16px; padding:2rem 1.5rem; border:2px dashed rgba(191,148,86,0.25); height:100%;">
+                    <article class="service-detail-step">
+                        <span>01</span><i class="fas fa-notes-medical" aria-hidden="true"></i>
                         <h5 data-cms-id="${id()}" data-cms-kind="text">কাদের জন্য প্রযোজ্য</h5>
                         <p class="mb-0" data-cms-id="${id()}" data-cms-kind="text">যেসব রোগীর এই সমস্যার লক্ষণ দীর্ঘদিন ধরে রয়েছে বা ওষুধে উন্নতি হচ্ছে না, তাদের জন্য এই চিকিৎসা প্রযোজ্য।</p>
-                    </div>
+                    </article>
                 </div>
                 <div class="col-md-4 wow fadeIn" data-wow-delay="0.2s">
-                    <div style="background:#fff; border-radius:16px; padding:2rem 1.5rem; border:2px dashed rgba(191,148,86,0.25); height:100%;">
+                    <article class="service-detail-step">
+                        <span>02</span><i class="fas fa-stethoscope" aria-hidden="true"></i>
                         <h5 data-cms-id="${id()}" data-cms-kind="text">চিকিৎসা প্রক্রিয়া</h5>
-                        <p class="mb-0" data-cms-id="${id()}" data-cms-kind="text">প্রথমে পরীক্ষা-নিরীক্ষার মাধ্যমে রোগ নির্ণয়, এরপর রোগীর অবস্থা অনুযায়ী সবচেয়ে উপযুক্ত পদ্ধতিতে চিকিৎসা করা হয়।</p>
-                    </div>
+                        <p class="mb-0" data-cms-id="${id()}" data-cms-kind="text">প্রয়োজনীয় পরীক্ষা-নিরীক্ষার পর রোগীর বয়স, শারীরিক অবস্থা ও রোগের ধরন অনুযায়ী ব্যক্তিগত চিকিৎসা পরিকল্পনা করা হয়।</p>
+                    </article>
                 </div>
                 <div class="col-md-4 wow fadeIn" data-wow-delay="0.3s">
-                    <div style="background:#fff; border-radius:16px; padding:2rem 1.5rem; border:2px dashed rgba(191,148,86,0.25); height:100%;">
-                        <h5 data-cms-id="${id()}" data-cms-kind="text">সুস্থ হতে সময়</h5>
-                        <p class="mb-0" data-cms-id="${id()}" data-cms-kind="text">অধিকাংশ রোগী অল্প সময়ের মধ্যেই স্বাভাবিক জীবনে ফিরে যেতে পারেন। নির্দিষ্ট সময় চিকিৎসকের পরামর্শ অনুযায়ী ফলো-আপ প্রয়োজন।</p>
-                    </div>
+                    <article class="service-detail-step">
+                        <span>03</span><i class="fas fa-heartbeat" aria-hidden="true"></i>
+                        <h5 data-cms-id="${id()}" data-cms-kind="text">অপারেশন ও ফলো-আপ</h5>
+                        <p class="mb-0" data-cms-id="${id()}" data-cms-kind="text">নিরাপদ অস্ত্রোপচারের পর সুস্থতার অগ্রগতি পর্যবেক্ষণ, প্রয়োজনীয় পরামর্শ এবং নির্ধারিত ফলো-আপ নিশ্চিত করা হয়।</p>
+                    </article>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- videos -->
-    <div class="container-fluid py-5">
+    <section class="service-detail-appointment">
         <div class="container">
-            <div class="text-center mb-4">
-                <h1 class="font-dancing-script text-primary" data-cms-id="${id()}" data-cms-kind="text">ভিডিও</h1>
-                <h2 class="mb-3" data-cms-id="${id()}" data-cms-kind="text">সম্পর্কিত ভিডিও সমূহ</h2>
+            <div class="service-detail-appointment-inner">
+                <div>
+                    <p class="service-detail-kicker" data-cms-id="${id()}" data-cms-kind="text">বিশেষজ্ঞ পরামর্শ প্রয়োজন?</p>
+                    <h2 data-cms-id="${id()}" data-cms-kind="text">আপনার সমস্যা নিয়ে সরাসরি কথা বলুন</h2>
+                    <p data-cms-id="${id()}" data-cms-kind="text">রিপোর্ট ও পূর্ববর্তী চিকিৎসার তথ্য সঙ্গে নিয়ে অ্যাপয়েন্টমেন্টে আসুন।</p>
+                </div>
+                <a class="btn btn-light rounded-pill px-4 py-3" href="contact.html" data-cms-id="${id()}" data-cms-kind="text">চেম্বার ও অ্যাপয়েন্টমেন্ট</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="service-detail-videos">
+        <div class="container">
+            <div class="service-detail-heading text-center">
+                <p class="service-detail-eyebrow" data-cms-id="${id()}" data-cms-kind="text">ভিডিও লাইব্রেরি</p>
+                <h2 data-cms-id="${id()}" data-cms-kind="text">${svc.title} সম্পর্কিত ভিডিও</h2>
             </div>
             <div class="gallery" data-cms-id="${svc.slug}-videos" data-cms-kind="text" data-cms-videos="1">
                 <p class="cms-video-empty text-center w-100">এখনো কোনো ভিডিও যুক্ত করা হয়নি।</p>
             </div>
         </div>
-    </div>
+    </section>
+    </main>
 `;
 
   return `${head}</head>
