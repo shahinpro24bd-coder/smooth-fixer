@@ -211,29 +211,21 @@ ${points}
     </div>
 `;
 
-  const tailScripts = FOOTER;
   return `${head}</head>
 <body>
-${NAV}
+${reId(NAV, svc.slug)}
 ${body}
-${reId(tailScripts, svc.slug)}`;
+${reId(FOOTER, svc.slug)}`;
 }
 
 for (const svc of SERVICES) {
-  const live = build(svc).replace(/\n<script src="\/cms\/cms-fonts.js"><\/script>/g, "");
-  const nav = reId(NAV, svc.slug);
-  const page = build(svc).replace(NAV, nav);
+  const page = build(svc);
   const editor = page.replace(
     '<script src="/cms/cms-content.js"></script>',
     '<script src="/cms/cms-content.js"></script>\n<script src="/cms/cms-fonts.js"></script>\n<script src="/cms/cms-editor.js"></script>',
   );
-  fs.writeFileSync(path.join(PUBLIC_DIR, `${svc.slug}.html`), page.replace(NAV, nav), "utf8");
-  fs.writeFileSync(
-    path.join(PUBLIC_DIR, `${svc.slug}2.html`),
-    editor.replace(`window.CMS_PAGE="${svc.slug}"`, `window.CMS_PAGE="${svc.slug}"`),
-    "utf8",
-  );
-  void live;
+  fs.writeFileSync(path.join(PUBLIC_DIR, `${svc.slug}.html`), page, "utf8");
+  fs.writeFileSync(path.join(PUBLIC_DIR, `${svc.slug}2.html`), editor, "utf8");
 }
 
 console.log("generated", SERVICES.map((s) => s.slug).join(", "));
